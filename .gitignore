@@ -43,3 +43,63 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+build/
+flutter_*.png
+generated_plugin_registrant.dart
+
+# VS Code
+.vscode/
+.history/
+
+# Android
+android/.gradle/
+android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+# iOS
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Flutter/engine/
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/.symlinks/
+
+# Windows
+windows/flutter/ephemeral/
+
+# Linux
+linux/flutter/ephemeral/
+
+# Web
+web/.dart_tool/
+
+# Firebase / Google Services (if used)
+google-services.json
+GoogleService-Info.plist
+
+# Temporary files
+*.tmp
+*.temp
+*.lock
+
+# Coverage
+coverage/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# Crashlytics
+crashlytics-build.properties
