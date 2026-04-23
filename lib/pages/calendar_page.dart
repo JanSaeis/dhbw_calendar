@@ -23,7 +23,8 @@ class CalendarPage extends StatefulWidget {
   _CalendarPageState createState() => _CalendarPageState();
 }
 
-class _CalendarPageState extends State<CalendarPage> {
+class _CalendarPageState extends State<CalendarPage>
+    with SingleTickerProviderStateMixin {
   final ICalService _ical = ICalService();
 
   Map<DateTime, List<Map<String, dynamic>>> events = {};
@@ -32,19 +33,32 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime focusedDay = DateTime.now();
   bool isLoading = false;
 
-  CalendarFormat _calendarFormat = CalendarFormat.month; // placeholder
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+
+  late final AnimationController _calendarController;
+  bool isCalendarExpanded = true;
 
   @override
   void initState() {
     super.initState();
 
-    // Load events immediately
+    _calendarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+      value: 1.0, // start expanded
+    );
+
     loadCalendar();
 
-    // Load saved format AFTER the widget is mounted
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadCalendarFormat();
     });
+  }
+
+  @override
+  void dispose() {
+    _calendarController.dispose();
+    super.dispose();
   }
 
   Future<void> loadCalendar() async {
@@ -57,7 +71,6 @@ class _CalendarPageState extends State<CalendarPage> {
     setState(() {
       events = map;
 
-      // Ensure selectedDay is valid for the new calendar
       final key = DateTime(
         selectedDay.year,
         selectedDay.month,
@@ -68,7 +81,6 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
-  // save dropdown preference
   Future<void> saveCalendarFormat(CalendarFormat format) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('calendarFormat', format.index);
@@ -80,7 +92,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
     if (index != null) {
       final format = CalendarFormat.values[index];
-
       if (mounted) {
         setState(() => _calendarFormat = format);
       }
@@ -96,19 +107,25 @@ class _CalendarPageState extends State<CalendarPage> {
         selectedDay = DateTime.now();
         focusedDay = DateTime.now();
       });
-      //final prefs = await SharedPreferences.getInstance();
-      //await prefs.remove('ical_cache_data_${oldWidget.icsUrl}');
-      //await prefs.remove('ical_cache_time_${oldWidget.icsUrl}');
       loadCalendar();
     }
   }
 
-  Color getSubjectColor(String subject) => SubjectColorService.getColor(subject);
+  Color getSubjectColor(String subject) =>
+      SubjectColorService.getColor(subject);
+
+  void toggleCalendarExpanded(){
+    isCalendarExpanded = !isCalendarExpanded;
+    if (isCalendarExpanded) {
+      _calendarController.forward();
+    } else {
+      _calendarController.reverse();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("DHBW Kalender")),
       body: Column(
         children: [
           // --- Top controls ---
@@ -160,36 +177,66 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
           ),
 
-          // --- Calendar ---
-          CalendarWidget(
-            key: ValueKey(widget.icsUrl),
-            focusedDay: focusedDay,
-            selectedDay: selectedDay,
-            format: _calendarFormat,
-            events: events,
-            onDaySelected: (selected, focused) {
-              setState(() {
-                selectedDay = selected;
-                focusedDay = focused;
-                selectedEvents =
-                    events[DateTime(
-                      selected.year,
-                      selected.month,
-                      selected.day,
-                    )] ??
-                    [];
-              });
-            },
-            onFormatChanged: (format) {
-              setState(() => _calendarFormat = format);
-              saveCalendarFormat(format);
-            },
-            onPageChanged: (focused) {
-              focusedDay = focused;
-            },
+          // --- Calendar with collapse animation ---
+          ClipRect(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizeTransition(
+                  sizeFactor: _calendarController,
+                  axisAlignment: -1.0, // collapse upward
+                  child: CalendarWidget(
+                    key: ValueKey(widget.icsUrl),
+                    focusedDay: focusedDay,
+                    selectedDay: selectedDay,
+                    format: _calendarFormat,
+                    events: events,
+                    onDaySelected: (selected, focused) {
+                      setState(() {
+                        toggleCalendarExpanded();
+
+                        selectedDay = selected;
+                        focusedDay = focused;
+                        selectedEvents = events[DateTime(
+                          selected.year,
+                          selected.month,
+                          selected.day,
+                        )] ?? [];
+                      });
+                    },
+                    onFormatChanged: (format) {
+                      setState(() => _calendarFormat = format);
+                      saveCalendarFormat(format);
+                    },
+                    onPageChanged: (focused) {
+                      focusedDay = focused;
+                    },
+                  ),
+                ),
+
+                // --- Bottom bar with arrow ---
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      toggleCalendarExpanded();
+                    });
+                  },
+                  child: Container(
+                    height: 32,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      isCalendarExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
 
-          // --- Event list with pull-to-refresh ---
+          // --- Event list ---
           Expanded(
             child: RefreshIndicator(
               onRefresh: loadCalendar,
