@@ -50,8 +50,9 @@ class ICalService {
 
     for (final event in events) {
       // Properties are lowercase
-      if (!event.containsKey('dtstart') || !event.containsKey('dtend'))
+      if (!event.containsKey('dtstart') || !event.containsKey('dtend')) {
         continue;
+      }
 
       final summary = event['summary']?.toString() ?? 'No title';
       final subject = extractSubject(summary);
