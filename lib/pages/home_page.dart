@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/update_widget.dart';
 import 'calendar_page.dart';
 import 'settings_page.dart';
 
@@ -33,6 +34,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _index = 0;
+  bool _checkedForUpdates = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!_checkedForUpdates) {
+        _checkedForUpdates = true;
+        await checkForUpdates(context);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

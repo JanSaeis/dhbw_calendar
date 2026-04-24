@@ -35,7 +35,12 @@ dependencies:
   table_calendar: ^3.0.9
   shared_preferences: ^2.2.0
   animations: ^2.0.8
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
+  package_info_plus: ^10.1.0
+  url_launcher: ^6.3.2
+  dio: ^5.4.0            # for downloading the APK
+  path_provider: ^2.1.2  # for saving the file
+  open_filex: ^4.0.0     # for opening the APK installer
 
 flutter_launcher_icons:
   android: true
