@@ -28,20 +28,69 @@ jobs:
       - name: Run Flutter analyze
         run: flutter analyze
 
-      - name: Build release APK
-        run: flutter build apk --release
+      # -----------------------------
+      # AUTO VERSION BUMP (GitHub-native)
+      # -----------------------------
+      - name: Determine next version
+        id: version
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          VERSION=${LATEST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          NEW_TAG="v$NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
+      - name: Update pubspec.yaml version
+        run: |
+          sed -i "s/^version:.*/version: ${{ steps.version.outputs.new_version }}+1/" pubspec.yaml
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
+          git push
+
+      - name: Create Git tag
+        run: |
+          git tag ${{ steps.version.outputs.new_tag }}
+          git push origin ${{ steps.version.outputs.new_tag }}
+
+      # -----------------------------
+      # BUILD SPLIT APKs
+      # -----------------------------
+      - name: Build split APKs
+        run: flutter build apk --release --split-per-abi
+
+      - name: Rename APKs
+        run: |
+          mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk dhbw_calendar-armeabi-v7a.apk
+          mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk dhbw_calendar-arm64-v8a.apk
+          mv build/app/outputs/flutter-apk/app-x86_64-release.apk dhbw_calendar-x86_64.apk
+
+      # -----------------------------
+      # CREATE RELEASE (GitHub-native)
+      # -----------------------------
       - name: Create GitHub Release
         run: |
-          gh release create "v${{ github.run_number }}" \
-            --title "Release ${{ github.run_number }}" \
+          gh release create "${{ steps.version.outputs.new_tag }}" \
+            --title "Release ${{ steps.version.outputs.new_version }}" \
             --notes "Automated release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload APK
+      # -----------------------------
+      # UPLOAD SPLIT APKs (GitHub-native)
+      # -----------------------------
+      - name: Upload split APKs
         run: |
-          gh release upload "v${{ github.run_number }}" \
-            build/app/outputs/flutter-apk/app-release.apk
+          gh release upload "${{ steps.version.outputs.new_tag }}" \
+            dhbw_calendar-armeabi-v7a.apk \
+            dhbw_calendar-arm64-v8a.apk \
+            dhbw_calendar-x86_64.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
