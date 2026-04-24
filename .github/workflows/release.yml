@@ -34,44 +34,6 @@ jobs:
         run: flutter analyze
 
       # -----------------------------
-      # TESTS
-      # -----------------------------
-
-      # -----------------------------
-      # AUTO VERSION BUMP
-      # -----------------------------
-      - name: Bump version
-        id: version
-        run: |
-          CURRENT_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
-          IFS='+' read VERSION BUILD <<< "$CURRENT_VERSION"
-          IFS='.' read MAJOR MINOR PATCH <<< "$VERSION"
-
-          NEW_PATCH=$((PATCH + 1))
-          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH+$BUILD"
-
-          sed -i "s/version: .*/version: $NEW_VERSION/" pubspec.yaml
-
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Commit version bump
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: bump version to ${{ steps.version.outputs.new_version }}"
-          branch: main
-
-      # -----------------------------
-      # AUTO CHANGELOG
-      # -----------------------------
-      - name: Generate changelog
-        id: changelog
-        uses: mikepenz/release-changelog-builder-action@v4
-        with:
-          configuration: ".github/changelog-config.json"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # -----------------------------
       # BUILD APK
       # -----------------------------
       - name: Build release APK
@@ -81,12 +43,10 @@ jobs:
       # CREATE RELEASE
       # -----------------------------
       - name: Create GitHub Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.version.outputs.new_version }}
-          name: "Release ${{ steps.version.outputs.new_version }}"
-          body: ${{ steps.changelog.outputs.changelog }}
+        run: |
+          gh release create v${{ steps.version.outputs.new_version }} \
+            --title "Release ${{ steps.version.outputs.new_version }}" \
+            --notes "${{ steps.changelog.outputs.changelog }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -94,8 +54,8 @@ jobs:
       # UPLOAD APK
       # -----------------------------
       - name: Upload APK
-        uses: softprops/action-gh-release@v2
-        with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+        run: |
+          gh release upload v${{ steps.version.outputs.new_version }} \
+            build/app/outputs/flutter-apk/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
