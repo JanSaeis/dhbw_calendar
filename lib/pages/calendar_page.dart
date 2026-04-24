@@ -20,10 +20,10 @@ class CalendarPage extends StatefulWidget {
   });
 
   @override
-  _CalendarPageState createState() => _CalendarPageState();
+  CalendarPageState createState() => CalendarPageState();
 }
 
-class _CalendarPageState extends State<CalendarPage>
+class CalendarPageState extends State<CalendarPage>
     with SingleTickerProviderStateMixin {
   final ICalService _ical = ICalService();
 
