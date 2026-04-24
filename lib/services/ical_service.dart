@@ -50,7 +50,8 @@ class ICalService {
 
     for (final event in events) {
       // Properties are lowercase
-      if (!event.containsKey('dtstart') || !event.containsKey('dtend')) continue;
+      if (!event.containsKey('dtstart') || !event.containsKey('dtend'))
+        continue;
 
       final summary = event['summary']?.toString() ?? 'No title';
       final subject = extractSubject(summary);
@@ -110,9 +111,9 @@ class ICalService {
     return DateTime.now();
   }
 
-
-
-  Map<DateTime, List<Map<String, dynamic>>> buildEventMap(List<Map<String, dynamic>> events) {
+  Map<DateTime, List<Map<String, dynamic>>> buildEventMap(
+    List<Map<String, dynamic>> events,
+  ) {
     final map = <DateTime, List<Map<String, dynamic>>>{};
 
     for (var event in events) {

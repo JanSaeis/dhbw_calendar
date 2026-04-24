@@ -24,7 +24,7 @@ class HomePage extends StatefulWidget {
     required this.useTimetableView,
     required this.onTimetableChanged,
     required this.oledMode,
-    required this.onOledModeChanged
+    required this.onOledModeChanged,
   });
 
   @override
@@ -38,9 +38,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final pages = [
       CalendarPage(
-          key: ValueKey(widget.icsUrl),
-          icsUrl: widget.icsUrl,
-          useTimetableView: widget.useTimetableView,
+        key: ValueKey(widget.icsUrl),
+        icsUrl: widget.icsUrl,
+        useTimetableView: widget.useTimetableView,
       ),
       SettingsPage(
         onThemeChanged: widget.onThemeChanged,
@@ -55,10 +55,7 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _index,
-        children: pages,
-      ),
+      body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) {
@@ -69,12 +66,9 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.calendar_today),
             label: "Calendar",
           ),
-          NavigationDestination(
-              icon: Icon(Icons.settings),
-              label: "Settings"),
+          NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
         ],
       ),
     );
   }
 }
-
