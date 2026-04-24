@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/notification_service.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initNotifications();
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {

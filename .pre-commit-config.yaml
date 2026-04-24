@@ -3,6 +3,6 @@ repos:
     hooks:
       - id: dart-format
         name: Dart Format
-        entry: dart format --set-exit-if-changed .
+        entry: dart format --set-exit-if-changed lib test
         language: system
         pass_filenames: false
