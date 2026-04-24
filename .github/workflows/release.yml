@@ -36,12 +36,15 @@ jobs:
       # -----------------------------
       # FORMATTING CHECK
       # -----------------------------
-      - name: Check formatting
-        run: |
-          if ! dart format --set-exit-if-changed .; then
-            echo "Formatting issues found"
-            exit 1
-          fi
+      - name: Auto-format code
+        run: dart format .
+
+      - name: Commit formatting fixes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-format code"
+          branch: main
+
 
       # -----------------------------
       # TESTS
