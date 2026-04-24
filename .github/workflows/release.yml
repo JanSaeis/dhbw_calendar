@@ -16,9 +16,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install GitHub CLI
-        uses: cli/cli@v2
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
