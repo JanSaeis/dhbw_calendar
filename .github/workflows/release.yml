@@ -38,7 +38,7 @@ jobs:
       # -----------------------------
       - name: Check formatting
         run: |
-          if ! flutter format --set-exit-if-changed .; then
+          if ! dart format --set-exit-if-changed .; then
             echo "Formatting issues found"
             exit 1
           fi
