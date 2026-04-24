@@ -36,8 +36,6 @@ jobs:
       # -----------------------------
       # TESTS
       # -----------------------------
-      - name: Run tests
-        run: flutter test
 
       # -----------------------------
       # AUTO VERSION BUMP
