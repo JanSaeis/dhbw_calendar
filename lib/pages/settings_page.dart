@@ -24,7 +24,7 @@ class SettingsPage extends StatelessWidget {
     required this.useTimetableView,
     required this.onTimetableChanged,
     required this.oledMode,
-    required this.onOledModeChanged
+    required this.onOledModeChanged,
   });
 
   /*
@@ -90,10 +90,7 @@ About
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
-                Switch(
-                  value: oledMode,
-                  onChanged: onOledModeChanged,
-                ),
+                Switch(value: oledMode, onChanged: onOledModeChanged),
               ],
             ),
           ),
@@ -109,10 +106,7 @@ About
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
-                Switch(
-                  value: useTimetableView,
-                  onChanged: onTimetableChanged,
-                ),
+                Switch(value: useTimetableView, onChanged: onTimetableChanged),
               ],
             ),
           ),
@@ -125,10 +119,7 @@ About
                 const Icon(Icons.link),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Text(
-                    currentIcsUrl,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Text(currentIcsUrl, overflow: TextOverflow.ellipsis),
                 ),
                 const Icon(Icons.chevron_right),
               ],
@@ -173,7 +164,9 @@ About
               children: const [
                 Icon(Icons.description),
                 SizedBox(width: 16),
-                Expanded(child: Text("Licenses", style: TextStyle(fontSize: 16))),
+                Expanded(
+                  child: Text("Licenses", style: TextStyle(fontSize: 16)),
+                ),
                 Icon(Icons.chevron_right),
               ],
             ),

@@ -32,7 +32,7 @@ class EventDetailsSheet extends StatelessWidget {
                 // Time
                 Text(
                   "🕒 ${start.hour}:${start.minute.toString().padLeft(2, '0')} "
-                      "– ${end.hour}:${end.minute.toString().padLeft(2, '0')}",
+                  "– ${end.hour}:${end.minute.toString().padLeft(2, '0')}",
                 ),
 
                 // Location (optional)

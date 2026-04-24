@@ -19,7 +19,6 @@ class _MyAppState extends State<MyApp> {
   bool _useTimetableView = false;
   bool _oledMode = false;
 
-
   @override
   void initState() {
     super.initState();
@@ -115,9 +114,7 @@ class _MyAppState extends State<MyApp> {
         dropdownMenuTheme: DropdownMenuThemeData(
           menuStyle: MenuStyle(
             shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(36),
-              ),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(36)),
             ),
           ),
         ),
@@ -132,12 +129,12 @@ class _MyAppState extends State<MyApp> {
         // Only use custom colorScheme when OLED mode is ON
         colorScheme: _oledMode
             ? ColorScheme.fromSeed(
-          seedColor: Colors.amber,
-          brightness: Brightness.dark,
-          background: Colors.black,
-          surface: Colors.black,
-          surfaceTint: Colors.transparent,
-        )
+                seedColor: Colors.amber,
+                brightness: Brightness.dark,
+                background: Colors.black,
+                surface: Colors.black,
+                surfaceTint: Colors.transparent,
+              )
             : null,
 
         scaffoldBackgroundColor: _oledMode ? Colors.black : null,
@@ -148,9 +145,7 @@ class _MyAppState extends State<MyApp> {
         dropdownMenuTheme: DropdownMenuThemeData(
           menuStyle: MenuStyle(
             shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             ),
           ),
         ),
@@ -169,4 +164,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
