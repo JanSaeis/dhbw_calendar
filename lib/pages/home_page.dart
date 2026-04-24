@@ -12,6 +12,9 @@ class HomePage extends StatefulWidget {
   final Function(bool) onTimetableChanged;
   final bool useTimetableView;
 
+  final bool oledMode;
+  final Function(bool) onOledModeChanged;
+
   const HomePage({
     super.key,
     required this.onThemeChanged,
@@ -19,7 +22,9 @@ class HomePage extends StatefulWidget {
     required this.icsUrl,
     required this.onIcsUrlChanged,
     required this.useTimetableView,
-    required this.onTimetableChanged
+    required this.onTimetableChanged,
+    required this.oledMode,
+    required this.onOledModeChanged
   });
 
   @override
@@ -44,6 +49,8 @@ class _HomePageState extends State<HomePage> {
         onIcsUrlChanged: widget.onIcsUrlChanged,
         useTimetableView: widget.useTimetableView,
         onTimetableChanged: widget.onTimetableChanged,
+        oledMode: widget.oledMode,
+        onOledModeChanged: widget.onOledModeChanged,
       ),
     ];
 

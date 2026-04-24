@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/event_details_sheet.dart';
 
 class EventList extends StatelessWidget {
   final List<Map<String, dynamic>> events;
@@ -28,28 +27,27 @@ class EventList extends StatelessWidget {
               left: BorderSide(color: getColor(e['subject']), width: 6),
             ),
           ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  e['summary'],
+                  style: Theme.of(context).textTheme.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "$timeRange • $location",
+                  style: Theme.of(context).textTheme.titleSmall,
+                  softWrap: true,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            title: Text(
-              e['summary'],
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            subtitle: Text(
-              "$timeRange • $location",
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true, // <-- allows full-screen height
-                backgroundColor: Colors.transparent, // optional, for cleaner edges
-                builder: (_) => EventDetailsSheet(event: e),
-              );
-            },
           ),
         );
       }).toList(),

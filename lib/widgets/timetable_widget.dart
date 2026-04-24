@@ -79,7 +79,7 @@ class TimetableWidget extends StatelessWidget {
                 for (int i = 0; i < totalHours; i++) ...[
                   // Hour label
                   Positioned(
-                    top: i * hourHeight + 4,
+                    top: i * hourHeight,
                     left: 8,
                     width: hourLabelWidth - 16,
                     child: Text("${startHour + i}:00"),
@@ -117,7 +117,7 @@ class TimetableWidget extends StatelessWidget {
                     DateTime.now().hour < endHour)
                   Positioned(
                     top:
-                    ((DateTime.now().hour - startHour) * hourHeight) +
+                        ((DateTime.now().hour - startHour) * hourHeight) +
                         (DateTime.now().minute / 60) * hourHeight,
                     left: hourLabelWidth,
                     right: 0,
@@ -171,7 +171,7 @@ class TimetableWidget extends StatelessWidget {
           margin: const EdgeInsets.all(4),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: getColor(e['subject']).withOpacity(0.8),
+            color: getColor(e['subject']).withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(12),
             border: Border(
               left: BorderSide(color: getColor(e['subject']), width: 4),
@@ -182,15 +182,22 @@ class TimetableWidget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  /*Icon(
-                    Icons.book, // or subject-specific icon
-                    size: 14,
-                  ),*/
-                  Text(
-                    e['summary'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: Text(
+                      e['summary'],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            offset: Offset(0, 1),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      overflow: TextOverflow.ellipsis, // optional
+                      maxLines: 1, // optional
                     ),
                   ),
                 ],
@@ -199,16 +206,27 @@ class TimetableWidget extends StatelessWidget {
               Row(
                 children: [
                   if (e['location'] != "")
-                    Text(
-                      e['location'],
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w900,
+                    Expanded(
+                      child: Text(
+                        e['location'],
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w900,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black12,
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                        overflow: TextOverflow.ellipsis, // optional
+                        maxLines: 1, // optional
                       ),
                     ),
                 ],
-              )
+              ),
             ],
           ),
         ),
