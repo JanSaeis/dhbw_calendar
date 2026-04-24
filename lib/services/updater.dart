@@ -3,8 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
+import '../services/notification_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 String detectAbi() {
   final version = Platform.version.toLowerCase();
@@ -48,24 +49,78 @@ bool _isNewerVersion(String remote, String local) {
 }
 
 Future<void> downloadAndInstallApk() async {
-  final url =
-      "https://github.com/JanSaeis/dhbw_calendar/releases/latest/download/app-release.apk";
-  final tempDir = await getTemporaryDirectory();
-  final filePath = '${tempDir.path}/update.apk';
-
-  final dio = Dio();
-
-  // Download the file
-  await dio.download(
-    url,
-    filePath,
-    onReceiveProgress: (received, total) {
-      if (total != -1) {
-        print("Download: ${(received / total * 100).toStringAsFixed(0)}%");
-      }
-    },
+  // Fetch release info
+  final api = await http.get(
+    Uri.parse(
+      "https://api.github.com/repos/JanSaeis/dhbw_calendar/releases/latest",
+    ),
   );
 
-  // Open the APK installer
+  final json = jsonDecode(api.body);
+  final assets = json["assets"] as List;
+
+  // Detect ABI and pick correct APK
+  final abi = detectAbi();
+  final expectedName = "dhbw_calendar-$abi.apk";
+
+  final apk = assets.firstWhere(
+    (a) => a["name"] == expectedName,
+    orElse: () => throw Exception("No APK found for ABI: $abi"),
+  );
+
+  final apiUrl = apk["url"]; // GitHub API asset URL
+
+  // Save to Downloads
+  final downloadsDir = Directory('/storage/emulated/0/Download');
+  final filePath = '${downloadsDir.path}/dhbw_update.apk';
+
+  final dio = Dio();
+  const int notifId = 1;
+
+  // Show "downloading" notification
+  await notifications.show(
+    notifId,
+    'Downloading update…',
+    'Please wait',
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'update_channel',
+        'App Updates',
+        importance: Importance.high,
+        priority: Priority.high,
+        onlyAlertOnce: true,
+        ongoing: true,
+      ),
+    ),
+  );
+
+  // Download (no progress)
+  await dio.download(
+    apiUrl,
+    filePath,
+    options: Options(
+      headers: {"Accept": "application/octet-stream"},
+      followRedirects: true,
+      validateStatus: (status) => status != null && status < 500,
+    ),
+  );
+
+  // Final notification
+  await notifications.show(
+    notifId,
+    'Download complete',
+    'Tap to install',
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'update_channel',
+        'App Updates',
+        importance: Importance.high,
+        priority: Priority.high,
+        autoCancel: true,
+      ),
+    ),
+  );
+
+  // Open installer
   await OpenFilex.open(filePath);
 }

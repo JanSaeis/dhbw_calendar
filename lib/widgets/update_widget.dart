@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/updater.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 Future<void> checkForUpdates(BuildContext context) async {
   final updateAvailable = await isUpdateAvailable();
