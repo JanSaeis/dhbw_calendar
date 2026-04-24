@@ -36,6 +36,7 @@ class _CalendarPageState extends State<CalendarPage>
   CalendarFormat _calendarFormat = CalendarFormat.month;
 
   late final AnimationController _calendarController;
+  late final Animation<double> _calendarAnimation;
   bool isCalendarExpanded = true;
 
   @override
@@ -44,9 +45,15 @@ class _CalendarPageState extends State<CalendarPage>
 
     _calendarController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
-      value: 1.0, // start expanded
+      duration: const Duration(milliseconds: 210),
     );
+
+    _calendarAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _calendarController, curve: Curves.easeIn),
+    );
+
+    // Start expanded
+    _calendarController.value = 1.0;
 
     loadCalendar();
 
@@ -114,7 +121,7 @@ class _CalendarPageState extends State<CalendarPage>
   Color getSubjectColor(String subject) =>
       SubjectColorService.getColor(subject);
 
-  void toggleCalendarExpanded(){
+  void toggleCalendarExpanded() {
     isCalendarExpanded = !isCalendarExpanded;
     if (isCalendarExpanded) {
       _calendarController.forward();
@@ -126,134 +133,158 @@ class _CalendarPageState extends State<CalendarPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // --- Top controls ---
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    final now = DateTime.now();
-                    setState(() {
-                      selectedDay = now;
-                      focusedDay = now;
-                      selectedEvents =
-                          events[DateTime(now.year, now.month, now.day)] ?? [];
-                    });
-                  },
-                  child: const Text("Jump to Today"),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 140,
-                  child: DropdownButton<CalendarFormat>(
-                    value: _calendarFormat,
-                    items: const [
-                      DropdownMenuItem(
-                        value: CalendarFormat.month,
-                        child: Text("Month"),
-                      ),
-                      DropdownMenuItem(
-                        value: CalendarFormat.twoWeeks,
-                        child: Text("2 Weeks"),
-                      ),
-                      DropdownMenuItem(
-                        value: CalendarFormat.week,
-                        child: Text("Week"),
-                      ),
-                    ],
-                    onChanged: (format) {
-                      if (format != null) {
-                        setState(() => _calendarFormat = format);
-                        saveCalendarFormat(format);
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // --- Calendar with collapse animation ---
-          ClipRect(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizeTransition(
-                  sizeFactor: _calendarController,
-                  axisAlignment: -1.0, // collapse upward
-                  child: CalendarWidget(
-                    key: ValueKey(widget.icsUrl),
-                    focusedDay: focusedDay,
-                    selectedDay: selectedDay,
-                    format: _calendarFormat,
-                    events: events,
-                    onDaySelected: (selected, focused) {
+      body: SafeArea(
+        child: Column(
+          children: [
+            // --- Top controls ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      toggleCalendarExpanded();
+                      final now = DateTime.now();
                       setState(() {
-                        toggleCalendarExpanded();
-
-                        selectedDay = selected;
-                        focusedDay = focused;
-                        selectedEvents = events[DateTime(
-                          selected.year,
-                          selected.month,
-                          selected.day,
-                        )] ?? [];
+                        selectedDay = now;
+                        focusedDay = now;
+                        selectedEvents =
+                            events[DateTime(now.year, now.month, now.day)] ??
+                            [];
                       });
                     },
-                    onFormatChanged: (format) {
-                      setState(() => _calendarFormat = format);
-                      saveCalendarFormat(format);
-                    },
-                    onPageChanged: (focused) {
-                      focusedDay = focused;
-                    },
+                    child: const Text("Today"),
                   ),
-                ),
-
-                // --- Bottom bar with arrow ---
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      toggleCalendarExpanded();
-                    });
-                  },
-                  child: Container(
-                    height: 32,
-                    alignment: Alignment.center,
-                    child: Icon(
-                      isCalendarExpanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      size: 28,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Theme.of(context).dividerColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: DropdownButton<CalendarFormat>(
+                      value: _calendarFormat,
+                      underline: SizedBox(),
+                      borderRadius: BorderRadius.circular(12),
+                      items: const [
+                        DropdownMenuItem(
+                          value: CalendarFormat.month,
+                          child: Text("Month"),
+                        ),
+                        DropdownMenuItem(
+                          value: CalendarFormat.twoWeeks,
+                          child: Text("2 Weeks"),
+                        ),
+                        DropdownMenuItem(
+                          value: CalendarFormat.week,
+                          child: Text("Week"),
+                        ),
+                      ],
+                      onChanged: (format) {
+                        if (format != null) {
+                          setState(() => _calendarFormat = format);
+                          saveCalendarFormat(format);
+                        }
+                      },
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          // --- Event list ---
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: loadCalendar,
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : widget.useTimetableView
-                  ? TimetableWidget(
-                events: selectedEvents,
-                getColor: getSubjectColor,
-              )
-                  : EventList(
-                events: selectedEvents,
-                getColor: getSubjectColor,
+                ],
               ),
             ),
-          ),
-        ],
+
+            // --- Calendar with collapse animation ---
+            ClipRect(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RepaintBoundary(
+                    child: SizeTransition(
+                      sizeFactor: _calendarAnimation,
+                      axisAlignment: -1.0, // collapse upward
+                      child: CalendarWidget(
+                        key: ValueKey(widget.icsUrl),
+                        focusedDay: focusedDay,
+                        selectedDay: selectedDay,
+                        format: _calendarFormat,
+                        events: events,
+                        getColor: getSubjectColor,
+                        onDaySelected: (selected, focused) {
+                          setState(() {
+                            toggleCalendarExpanded();
+
+                            selectedDay = selected;
+                            focusedDay = focused;
+                            selectedEvents =
+                                events[DateTime(
+                                  selected.year,
+                                  selected.month,
+                                  selected.day,
+                                )] ??
+                                [];
+                          });
+                        },
+                        onFormatChanged: (format) {
+                          setState(() => _calendarFormat = format);
+                          saveCalendarFormat(format);
+                        },
+                        onPageChanged: (focused) {
+                          focusedDay = focused;
+                        },
+                      ),
+                    ),
+                  ),
+
+                  // --- Bottom bar with arrow ---
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      setState(() {
+                        toggleCalendarExpanded();
+                      });
+                    },
+                    child: Container(
+                      height: 32,
+                      width: double.infinity,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        isCalendarExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // --- Event list ---
+            Expanded(
+              child: RefreshIndicator(
+                key: UniqueKey(),
+                onRefresh: loadCalendar,
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : widget.useTimetableView
+                    ? TimetableWidget(
+                        events: selectedEvents,
+                        getColor: getSubjectColor,
+                      )
+                    : EventList(
+                        events: selectedEvents,
+                        getColor: getSubjectColor,
+                      ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

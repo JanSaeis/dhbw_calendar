@@ -9,6 +9,7 @@ class CalendarWidget extends StatelessWidget {
   final Function(DateTime, DateTime) onDaySelected;
   final Function(CalendarFormat) onFormatChanged;
   final Function(DateTime) onPageChanged;
+  final Color Function(String subject) getColor;
 
   const CalendarWidget({
     super.key,
@@ -19,6 +20,7 @@ class CalendarWidget extends StatelessWidget {
     required this.onDaySelected,
     required this.onFormatChanged,
     required this.onPageChanged,
+    required this.getColor,
   });
 
   @override
@@ -49,24 +51,27 @@ class CalendarWidget extends StatelessWidget {
           },
           calendarBuilders: CalendarBuilders(
             markerBuilder: (context, day, dayEvents) {
-              if (dayEvents.isEmpty) return SizedBox.shrink();
+              if (dayEvents.isEmpty) return const SizedBox.shrink();
 
               return Align(
                 alignment: Alignment.bottomCenter,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    dayEvents.length.clamp(1, 3),
-                    (index) => Container(
+                  children: List.generate(dayEvents.length.clamp(1, 3), (
+                    index,
+                  ) {
+                    final event = dayEvents[index] as Map<String, dynamic>;
+
+                    return Container(
                       width: 6,
                       height: 6,
-                      margin: EdgeInsets.symmetric(horizontal: 1),
+                      margin: const EdgeInsets.symmetric(horizontal: 1),
                       decoration: BoxDecoration(
-                        color: Color(0xFFDA6F21),
-                        shape: BoxShape.rectangle,
+                        color: getColor(event['subject'] ?? ''),
+                        shape: BoxShape.circle,
                       ),
-                    ),
-                  ),
+                    );
+                  }),
                 ),
               );
             },

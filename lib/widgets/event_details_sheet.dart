@@ -19,7 +19,7 @@ class EventDetailsSheet extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Title
                 Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/url_utils.dart';
+import '../widgets/card_widget.dart';
 
 class SettingsPage extends StatelessWidget {
   final Function(ThemeMode) onThemeChanged;
@@ -11,6 +12,9 @@ class SettingsPage extends StatelessWidget {
   final bool useTimetableView;
   final Function(bool) onTimetableChanged;
 
+  final bool oledMode;
+  final Function(bool) onOledModeChanged;
+
   const SettingsPage({
     super.key,
     required this.onThemeChanged,
@@ -19,6 +23,8 @@ class SettingsPage extends StatelessWidget {
     required this.onIcsUrlChanged,
     required this.useTimetableView,
     required this.onTimetableChanged,
+    required this.oledMode,
+    required this.onOledModeChanged
   });
 
   /*
@@ -42,106 +48,146 @@ About
       appBar: AppBar(title: const Text("Settings")),
       body: ListView(
         children: [
-          // -------------------------
-          // Appearance Section
-          // -------------------------
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-            child: Text(
-              "Appearance",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-
-          ListTile(
-            title: const Text("Theme"),
-            subtitle: Text(currentThemeMode.name),
-            trailing: DropdownButton<ThemeMode>(
-              value: currentThemeMode,
-              onChanged: (mode) {
-                if (mode != null) onThemeChanged(mode);
-              },
-              items: const [
-                DropdownMenuItem(
-                  value: ThemeMode.system,
-                  child: Text("System"),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.light,
-                  child: Text("Light"),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.dark,
-                  child: Text("Dark"),
+          // THEME MODE
+          SettingsCard(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Theme", style: TextStyle(fontSize: 16)),
+                DropdownButton<ThemeMode>(
+                  value: currentThemeMode,
+                  borderRadius: BorderRadius.circular(12),
+                  onChanged: (mode) {
+                    if (mode != null) onThemeChanged(mode);
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: ThemeMode.system,
+                      child: Text("System"),
+                    ),
+                    DropdownMenuItem(
+                      value: ThemeMode.light,
+                      child: Text("Light"),
+                    ),
+                    DropdownMenuItem(
+                      value: ThemeMode.dark,
+                      child: Text("Dark"),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
 
-          SwitchListTile(
-            title: Text("Timetable View (BETA)"),
-            subtitle: Text("Show events in an hour-by-hour grid"),
-            value: useTimetableView,
-            onChanged: (value) {
-              onTimetableChanged(value);
-            },
-          ),
-
-          const Divider(height: 32),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text(
-              "Calendar",
-              style: Theme.of(context).textTheme.titleMedium,
+          // OLED MODE
+          SettingsCard(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Expanded(
+                  child: Text(
+                    "OLED black mode",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                Switch(
+                  value: oledMode,
+                  onChanged: onOledModeChanged,
+                ),
+              ],
             ),
           ),
 
-          ListTile(
-            title: const Text("Calendar URL"),
-            subtitle: Text(currentIcsUrl),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // open dialog to edit ICS URL
-              _editIcsUrl(context);
-            },
+          // TIMETABLE MODE
+          SettingsCard(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Expanded(
+                  child: Text(
+                    "Timetable View (BETA)",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                Switch(
+                  value: useTimetableView,
+                  onChanged: onTimetableChanged,
+                ),
+              ],
+            ),
           ),
 
-          ListTile(
-            title: const Text("Refresh Calendar"),
-            leading: const Icon(Icons.refresh),
+          // ICS URL
+          SettingsCard(
+            onTap: () => _editIcsUrl(context),
+            child: Row(
+              children: [
+                const Icon(Icons.link),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    currentIcsUrl,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+
+          SettingsCard(
             onTap: () {
-              // You can trigger refresh from HomePage or CalendarPage
+              onThemeChanged(ThemeMode.system);
+              onTimetableChanged(false);
+              onOledModeChanged(false);
+              onIcsUrlChanged("https://dhbw.app/ical/STG-TINF25H-ITA.ics");
+
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Refreshing Calendar...")),
+                const SnackBar(content: Text("Settings reset to defaults")),
               );
             },
-          ),
-
-          const Divider(height: 32),
-
-          // -------------------------
-          // About Section
-          // -------------------------
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text(
-              "About",
-              style: Theme.of(context).textTheme.titleMedium,
+            child: Row(
+              children: const [
+                Icon(Icons.restore),
+                SizedBox(width: 16),
+                Text("Reset to defaults", style: TextStyle(fontSize: 16)),
+              ],
             ),
           ),
 
-          ListTile(title: const Text("Version"), subtitle: const Text("1.0.0")),
-
-          ListTile(
-            title: const Text("Licenses"),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => showLicensePage(context: context),
+          // VERSION
+          SettingsCard(
+            child: Row(
+              children: const [
+                Icon(Icons.info_outline),
+                SizedBox(width: 16),
+                Text("Version 1.0.0", style: TextStyle(fontSize: 16)),
+              ],
+            ),
           ),
 
-          const Divider(height: 32),
+          // LICENSES
+          SettingsCard(
+            onTap: () => showLicensePage(context: context),
+            child: Row(
+              children: const [
+                Icon(Icons.description),
+                SizedBox(width: 16),
+                Expanded(child: Text("Licenses", style: TextStyle(fontSize: 16))),
+                Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
 
-          ListTile(title: const Text(""), subtitle: const Text("Made By Your ITA-25 Course ❤️")),
+          // FOOTER
+          const SizedBox(height: 16),
+          const Center(
+            child: Text(
+              "🚀 Made by Jan Saeisih, ITA‑25",
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -155,10 +201,11 @@ About
       builder: (_) => AlertDialog(
         title: const Text("Edit Calendar URL"),
         content: TextField(
+          showCursor: true,
+          autocorrect: false,
+          enabled: true,
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: "ICS URL",
-          ),
+          decoration: const InputDecoration(labelText: "ICS URL"),
         ),
         actions: [
           TextButton(
